@@ -24,7 +24,7 @@ const ProfileSetupForm = ({ onNext, tempData }) => {
     e.preventDefault();
     console.log('Submitting form data:', formData);
     onNext(formData); // Pass form data to OnboardingPage
-    router.push('/onboarding/2'); // Navigate to the next step
+    // router.push('/onboarding/2'); // Navigate to the next step
   };
 
   return (

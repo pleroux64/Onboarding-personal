@@ -8,7 +8,7 @@ const SystemConfigs = ({ onNext }) => {
 
   const handleNext = () => {
     onNext();
-    router.push('/onboarding/3'); // Proceed to the next step
+    // router.push('/onboarding/3'); // Proceed to the next step
   };
 
   return (

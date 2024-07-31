@@ -8,7 +8,7 @@ const FinalSteps = ({ onNext }) => {
 
   const handleFinish = () => {
     onNext(); // Finalize onboarding
-    router.push('/onboarding/4'); // Navigate to the final step
+    // router.push('/onboarding/4'); // Navigate to the final step
   };
 
   return (

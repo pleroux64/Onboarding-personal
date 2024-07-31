@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 
+import { useRouter } from 'next/router';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Complete from './Complete';
@@ -26,6 +27,7 @@ const onboardingComponents = {
 
 const OnboardingPage = ({ onboardingData }) => {
   const dispatch = useDispatch();
+  const router = useRouter();
   const step = useSelector((state) => state.onboarding.step);
   const tempData = useSelector((state) => state.onboarding.tempData);
 
@@ -38,7 +40,7 @@ const OnboardingPage = ({ onboardingData }) => {
 
   const handleNext = (formData = {}) => {
     console.log('Current Form Data:', formData);
-    if (onboardingData.id === 1) {
+    if (onboardingComponents[onboardingData.id] === ProfileSetupForm) {
       console.log('Storing form data in Redux');
       dispatch(setTempData(formData)); // Store form data in Redux
     }
@@ -50,6 +52,7 @@ const OnboardingPage = ({ onboardingData }) => {
     }
     console.log(`Moving to step: ${onboardingData.id + 1}`);
     dispatch(setStep(onboardingData.id + 1)); // Update the step in Redux
+    router.push(`/onboarding/${onboardingData.id + 1}`);
   };
 
   const SpecificOnboardingScreen =
