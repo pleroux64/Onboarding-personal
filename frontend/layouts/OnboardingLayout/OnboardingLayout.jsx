@@ -10,6 +10,8 @@ import AppDisabled from '@/components/AppDisabled';
 import ProgressBar from './ProgressBar';
 import styles from './styles';
 
+import ProgressBarProvider from '@/providers/ProgressBarProvider';
+
 const OnboardingLayout = (props) => {
   const { children } = props;
   const isTabletScreen = useMediaQuery((theme) =>
@@ -32,12 +34,14 @@ const OnboardingLayout = (props) => {
 
   return (
     <Grid {...styles.mainGrid}>
-      <Grid {...styles.progressBarContainer}>
-        <ProgressBar currentStep={Number(onboardingId)} />
-      </Grid>
-      {renderHead()}
-      {isTabletScreen && <AppDisabled head={renderHead()} />}
-      {!isTabletScreen && renderApp()}
+      <ProgressBarProvider>
+        <Grid {...styles.progressBarContainer}>
+          <ProgressBar currentStep={Number(onboardingId)} />
+        </Grid>
+        {renderHead()}
+        {isTabletScreen && <AppDisabled head={renderHead()} />}
+        {!isTabletScreen && renderApp()}
+      </ProgressBarProvider>
     </Grid>
   );
 };
