@@ -1,15 +1,30 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 import { Button, Grid, TextField, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
 
-const ProfileSetupForm = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+const ProfileSetupForm = ({ onNext, tempData }) => {
+  const [formData, setFormData] = useState({
+    name: tempData.name || '',
+    email: tempData.email || '',
+  });
+
   const router = useRouter();
 
-  const handleSubmit = () => {
-    router.push('/onboarding/2');
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+    console.log(`Updated ${name}:`, value);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Submitting form data:', formData);
+    onNext(formData); // Pass form data to OnboardingPage
+    // router.push('/onboarding/2'); // Navigate to the next step
   };
 
   return (
@@ -18,25 +33,29 @@ const ProfileSetupForm = () => {
         Profile Setup
       </Typography>
       <Typography>Get started by setting up your profile</Typography>
-      <TextField
-        label="Name"
-        variant="outlined"
-        fullWidth
-        margin="normal"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <TextField
-        label="Email"
-        variant="outlined"
-        fullWidth
-        margin="normal"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <Button variant="contained" onClick={handleSubmit} sx={{ mt: 2 }}>
-        Next
-      </Button>
+      <form onSubmit={handleSubmit}>
+        <TextField
+          name="name"
+          label="Name"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          value={formData.name}
+          onChange={handleInputChange}
+        />
+        <TextField
+          name="email"
+          label="Email"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          value={formData.email}
+          onChange={handleInputChange}
+        />
+        <Button type="submit" variant="contained" sx={{ mt: 2 }}>
+          Next
+        </Button>
+      </form>
     </Grid>
   );
 };

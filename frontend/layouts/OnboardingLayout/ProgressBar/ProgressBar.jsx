@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
@@ -14,108 +14,94 @@ import {
   useStepContext,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
+import { useSelector } from 'react-redux';
 
-import styles from './styles'; // Import styles
+import styles from './styles';
 
-import { useProgressBar } from '@/providers/ProgressBarProvider';
+const onboardingSteps = [
+  { label: 'Welcome' },
+  { label: 'Profile Setup' },
+  { label: 'System Configurations' },
+  { label: 'Final Steps' },
+];
 
 const CustomStepConnector = () => {
   const { active, completed } = useStepContext();
   return <StepConnector {...styles.stpConnector(active, completed)} />;
 };
 
-const StepIcon = ({ step, active, completed }) => {
-  if (!step) {
-    return (
-      <Grid {...styles.gridProps}>
-        <Grid {...styles.containerProps}>
-          {completed ? (
-            <Grid {...styles.stepCircleCompleted} />
-          ) : (
-            <Grid {...styles.getStepCircleStyle(active)} />
-          )}
-        </Grid>
-      </Grid>
-    );
-  }
-  return (
-    <Grid {...styles.gridProps}>
-      <Grid {...styles.containerProps}>
-        {step.status === 'completed' ? (
-          <Grid {...styles.stepCircleCompleted} />
-        ) : (
-          <Grid {...styles.getStepCircleStyle(step.status === 'active')} />
-        )}
-      </Grid>
+const StepIcon = ({ active, completed }) => (
+  <Grid {...styles.gridProps}>
+    <Grid {...styles.containerProps}>
+      {completed ? (
+        <Grid {...styles.stepCircleCompleted} />
+      ) : (
+        <Grid {...styles.getStepCircleStyle(active)} />
+      )}
     </Grid>
-  );
-};
+  </Grid>
+);
 
-const CustomStepper = () => {
-  const { activeStep, steps } = useProgressBar();
-  return (
-    <Stepper
-      activeStep={activeStep}
-      connector={<CustomStepConnector />}
-      {...styles.stepperProps}
+const CustomStepper = ({ currentStep }) => (
+  <Stepper
+    activeStep={currentStep}
+    connector={<CustomStepConnector />}
+    {...styles.stepperProps}
+  >
+    {onboardingSteps.map((step, index) => (
+      <Step key={index}>
+        <StepButton>
+          <StepLabel StepIconComponent={StepIcon} />
+        </StepButton>
+      </Step>
+    ))}
+  </Stepper>
+);
+
+const CustomAccordion = ({ expanded, handleChange, currentStep }) => (
+  <Accordion
+    expanded={expanded === 'panel'}
+    onChange={handleChange('panel')}
+    {...styles.accordionProps}
+  >
+    <AccordionSummary
+      expandIcon={<ExpandMoreIcon {...styles.expandMoreIconProps} />}
+      {...styles.accordionSummaryProps}
     >
-      {steps.map((_, index) => (
-        <Step key={index}>
-          <StepButton>
-            <StepLabel StepIconComponent={StepIcon} />
-          </StepButton>
-        </Step>
+      <CustomStepper currentStep={currentStep} />
+    </AccordionSummary>
+    <AccordionDetails {...styles.accordionDetailsProps}>
+      {onboardingSteps.map((step, key) => (
+        <Grid key={key} {...styles.accordionDetailsGridProps}>
+          <StepIcon
+            active={key === currentStep}
+            completed={key < currentStep}
+          />
+          <Typography key={key} {...styles.stepLabelProps}>
+            {step.label}
+          </Typography>
+        </Grid>
       ))}
-    </Stepper>
-  );
-};
+    </AccordionDetails>
+  </Accordion>
+);
 
-const CustomAccordion = (props) => {
-  const { expanded, handleChange } = props;
-  const { steps } = useProgressBar();
-  return (
-    <Accordion
-      expanded={expanded === 'panel'}
-      onChange={handleChange('panel')}
-      {...styles.accordionProps}
-    >
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon {...styles.expandMoreIconProps} />}
-        {...styles.accordionSummaryProps}
-      >
-        <CustomStepper />
-      </AccordionSummary>
-      <AccordionDetails {...styles.accordionDetailsProps}>
-        {steps.map((step, key) => (
-          <Grid key={key} {...styles.accordionDetailsGridProps}>
-            <StepIcon step={step} />
-            <Typography key={key} {...styles.stepLabelProps}>
-              {step.label}
-            </Typography>
-          </Grid>
-        ))}
-      </AccordionDetails>
-    </Accordion>
-  );
-};
-
-const ProgressBar = ({ currentStep }) => {
-  const { setActiveStep } = useProgressBar();
+const ProgressBar = () => {
+  const currentStep = useSelector((state) => state.onboarding.step);
   const [expanded, setExpanded] = useState(false);
   const handleChange = (panel) => (event, isExpanded) => {
     setExpanded(isExpanded ? panel : false);
   };
 
-  useEffect(() => {
-    setActiveStep(Number(currentStep));
-  }, [currentStep]);
-
   return (
     <>
-      {expanded && <div style={styles.blurredBackground} />}{' '}
-      {/* Apply blur effect */}
+      {expanded && <div style={styles.blurredBackground} />}
       <Grid {...styles.mainGridProps}>
-        <CustomAccordion expanded={expanded} handleChange={handleChange} />
+        <CustomAccordion
+          expanded={expanded}
+          handleChange={handleChange}
+          currentStep={currentStep}
+        />
       </Grid>
     </>
   );
