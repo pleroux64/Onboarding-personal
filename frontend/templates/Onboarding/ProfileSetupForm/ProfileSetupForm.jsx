@@ -8,7 +8,6 @@ import {
   TextareaAutosizeElement,
   useForm,
 } from 'react-hook-form-mui';
-
 import { useDispatch } from 'react-redux';
 
 import ProfileTextField, {
@@ -22,7 +21,6 @@ import stylesOnboarding from '../styles.js';
 import styles from './styles.js';
 
 import { AuthContext } from '@/providers/GlobalProvider.jsx';
-
 import { setTempData } from '@/redux/slices/onboardingSlice.js';
 
 const ProfileSetupForm = ({ onNext, tempData }) => {
@@ -74,7 +72,8 @@ const ProfileSetupForm = ({ onNext, tempData }) => {
         control={control}
         rules={{ required: 'Full Name is required!' }}
         placeholder="Enter Name"
-        error={errors.fullName}
+        error={!!errors.fullName}
+        helperText={errors.fullName ? errors.fullName.message : undefined}
       />
     </InputWrapper>
   );
@@ -86,7 +85,8 @@ const ProfileSetupForm = ({ onNext, tempData }) => {
         control={control}
         rules={{ required: 'Occupation is required!' }}
         placeholder="Enter Occupation"
-        error={errors.occupation}
+        error={!!errors.occupation}
+        helperText={errors.occupation ? errors.occupation.message : undefined}
       />
     </InputWrapper>
   );
@@ -105,7 +105,8 @@ const ProfileSetupForm = ({ onNext, tempData }) => {
           }}
           icon={Facebook}
           placeholder="Paste Link"
-          error={errors.facebook}
+          error={!!errors.facebook}
+          helperText={errors.facebook ? errors.facebook.message : undefined}
         />
         <ProfileTextField
           name="linkedin"
@@ -119,7 +120,8 @@ const ProfileSetupForm = ({ onNext, tempData }) => {
           }}
           icon={LinkedIn}
           placeholder="Paste Link"
-          error={errors.linkedin}
+          error={!!errors.linkedin}
+          helperText={errors.linkedin ? errors.linkedin.message : undefined}
         />
         <ProfileTextField
           name="x"
@@ -132,7 +134,8 @@ const ProfileSetupForm = ({ onNext, tempData }) => {
           }}
           icon={XIcon}
           placeholder="Paste Link"
-          error={errors.x}
+          error={!!errors.x}
+          helperText={errors.x ? errors.x.message : undefined}
         />
       </Grid>
     </InputWrapper>
@@ -163,10 +166,7 @@ const ProfileSetupForm = ({ onNext, tempData }) => {
         control={control}
         render={({ field: { onChange, onBlur, name } }) => (
           <InputWrapper label="Profile">
-            <Grid
-              {...styles.imageUploadContainer}
-              onDrop={(e) => handleImageUpload(e, onChange)}
-            >
+            <Grid {...styles.imageUploadContainer} onDrop={handleImageUpload}>
               {watchProfile ? (
                 <Grid>
                   <Typography component="span">{watchProfile}</Typography>
@@ -224,7 +224,7 @@ const ProfileSetupForm = ({ onNext, tempData }) => {
       />
       <Typography {...styles.wordLimit}>
         Words:{' '}
-        <Typography {...styles.wordLimitError(errors.bio)}>
+        <Typography {...styles.wordLimitError(!!errors.bio)}>
           {watchBio ? watchBio.trim().split(/\s+/).length : '0'}/200
         </Typography>
       </Typography>
@@ -232,9 +232,9 @@ const ProfileSetupForm = ({ onNext, tempData }) => {
   );
 
   return (
-    <Grid {...stylesOnboarding.mainGrid} {...styles.mainGrid}>
-      <Typography {...stylesOnboarding.titleProps}>Profile Setup</Typography>
-      <Typography {...stylesOnboarding.descriptionProps}>
+    <Grid {...stylesOnboarding.mainGrid}>
+      <Typography {...stylesOnboarding.title}>Profile Setup</Typography>
+      <Typography {...stylesOnboarding.description}>
         Get started by setting up your profile
       </Typography>
 
@@ -251,7 +251,9 @@ const ProfileSetupForm = ({ onNext, tempData }) => {
           {renderSocialLinks()}
           {renderProfile()}
           {renderBio()}
-          <Button {...stylesOnboarding.buttonProps}>Next</Button>
+          <Button type="submit" variant="contained" sx={{ mt: 2 }}>
+            Next
+          </Button>
         </Grid>
       </FormContainer>
     </Grid>

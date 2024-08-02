@@ -1,3 +1,5 @@
+import React, { forwardRef } from 'react';
+
 import { Controller, TextFieldElement } from 'react-hook-form-mui';
 
 import styles from './styles';
@@ -15,8 +17,7 @@ import styles from './styles';
  *
  * @returns {React.Element} The rendered `TextFieldElement` wrapped with `Controller`.
  */
-
-const ProfileTextField = (props) => {
+const ProfileTextField = forwardRef((props, ref) => {
   const { name, control, rules, icon: Icon, error, ...otherProps } = props;
 
   return (
@@ -29,6 +30,7 @@ const ProfileTextField = (props) => {
           {...styles.input}
           {...otherProps}
           {...field}
+          ref={ref}
           InputProps={
             Icon
               ? {
@@ -41,12 +43,12 @@ const ProfileTextField = (props) => {
                 }
               : {}
           }
-          errors={!!error}
-          helperText={error ? error.message : ''}
+          error={!!error}
+          helperText={error ? error.message : undefined}
         />
       )}
     />
   );
-};
+});
 
 export default ProfileTextField;

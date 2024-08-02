@@ -102,7 +102,7 @@ const SignInForm = (props) => {
         fetchUserData({ firestore, id: userCred.user.uid })
       ).unwrap();
       if (userData?.needsBoarding) {
-        router.replace(ROUTES.ONBOARDING);
+        router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
       } else {
         router.replace(ROUTES.HOME);
       }
