@@ -1,23 +1,22 @@
+import React from 'react';
+
 import { Button, Grid, Typography } from '@mui/material';
-import { useRouter } from 'next/router';
 
-const SystemConfigs = () => {
-  const router = useRouter();
+import styles from '../styles.js';
 
+const SystemConfigs = ({ onNext }) => {
   const handleNext = () => {
-    router.push('/onboarding/3');
+    onNext();
   };
 
   return (
-    <Grid sx={{ p: 3, textAlign: 'center' }}>
-      <Typography variant="h4" gutterBottom>
-        System Configurations
-      </Typography>
-      <Typography variant="body1" paragraph>
+    <Grid {...styles.mainGrid}>
+      <Typography {...styles.titleProps}>System Configurations</Typography>
+      <Typography {...styles.descriptionProps}>
         Configure your system settings to optimize your experience.
       </Typography>
-      <Button variant="contained" onClick={handleNext}>
-        Finish
+      <Button {...styles.buttonProps} onClick={handleNext}>
+        Next
       </Button>
     </Grid>
   );

@@ -1,23 +1,22 @@
+import React from 'react';
+
 import { Button, Grid, Typography } from '@mui/material';
-import { useRouter } from 'next/router';
 
-const FinalSteps = () => {
-  const router = useRouter();
+import styles from '../styles.js';
 
+const FinalSteps = ({ onNext }) => {
   const handleFinish = () => {
-    router.push('/onboarding/4');
+    onNext();
   };
 
   return (
-    <Grid sx={{ p: 3, textAlign: 'center' }}>
-      <Typography variant="h4" gutterBottom>
-        Final Steps
-      </Typography>
-      <Typography variant="body1" paragraph>
+    <Grid {...styles.mainGrid}>
+      <Typography {...styles.titleProps}>Final Steps</Typography>
+      <Typography {...styles.descriptionProps}>
         Review your information and complete the setup process.
       </Typography>
-      <Button variant="contained" onClick={handleFinish}>
-        Continue
+      <Button {...styles.buttonProps} onClick={handleFinish}>
+        Finish
       </Button>
     </Grid>
   );

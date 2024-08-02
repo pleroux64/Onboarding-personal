@@ -1,45 +1,32 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-import fetchOnboardingData from '../thunks/onboarding';
-
 const initialState = {
-  data: null,
-  loading: false,
-  error: null,
-  // Add additional properties here if needed
+  step: 1,
+  completed: false,
+  tempData: {},
 };
 
 const onboardingSlice = createSlice({
   name: 'onboarding',
   initialState,
   reducers: {
-    // Define any synchronous actions here if needed
     reset: () => initialState,
-    // Example of additional reducers
-    setLoading: (state, action) => {
-      state.loading = action.payload;
+    setStep: (state, action) => {
+      state.step = action.payload;
     },
-    setError: (state, action) => {
-      state.error = action.payload;
+    setCompleted: (state, action) => {
+      state.completed = action.payload;
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchOnboardingData.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchOnboardingData.fulfilled, (state, action) => {
-        state.loading = false;
-        state.data = action.payload;
-      })
-      .addCase(fetchOnboardingData.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      });
+    setTempData: (state, action) => {
+      state.tempData = { ...state.tempData, ...action.payload };
+    },
+    clearTempData: (state) => {
+      state.tempData = {};
+    },
   },
 });
 
-export const { reset, setLoading, setError } = onboardingSlice.actions;
+export const { reset, setStep, setCompleted, setTempData, clearTempData } =
+  onboardingSlice.actions;
 
 export default onboardingSlice.reducer;
