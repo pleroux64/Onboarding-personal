@@ -55,7 +55,7 @@ const useRedirect = (firestore, functions, handleOpenSnackBar) => {
 
       fetchUserRelatedData(auth.currentUser.uid).then((user) => {
         if (user && user.needsBoarding) {
-          router.replace(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+          router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
         } else if (isAuthUrl) {
           router.push(ROUTES.HOME);
         }
@@ -79,12 +79,7 @@ const useRedirect = (firestore, functions, handleOpenSnackBar) => {
           await applyActionCode(auth, oobCode);
           dispatch(setEmailVerified(true));
 
-          const user = await fetchUserRelatedData(auth.currentUser.uid);
-          if (user && user.needsBoarding) {
-            router.replace(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
-          } else {
-            router.replace(ROUTES.HOME);
-          }
+          router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
         } catch (error) {
           handleOpenSnackBar(ALERT_COLORS.ERROR, 'Unable to verify email');
           router.push(ROUTES.SIGNUP);
@@ -101,16 +96,10 @@ const useRedirect = (firestore, functions, handleOpenSnackBar) => {
 
       if (mode === AUTH_MODES.VERIFY_EMAIL) {
         if (auth.currentUser?.emailVerified) {
-          fetchUserRelatedData(auth.currentUser.uid).then((user) => {
-            if (user && user.needsBoarding) {
-              router.replace(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
-            } else {
-              router.replace(ROUTES.HOME);
-            }
-          });
-        } else {
-          handleVerifyEmail();
+          router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+          return;
         }
+        handleVerifyEmail();
       }
     }
   }, [query]);

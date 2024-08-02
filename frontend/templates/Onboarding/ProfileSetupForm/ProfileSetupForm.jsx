@@ -51,7 +51,6 @@ const ProfileSetupForm = ({ onNext, tempData }) => {
       x: '',
       profile: '',
       bio: '',
-      needsBoarding: false,
     };
 
     // Merge the template with the user-provided data, overriding defaults
