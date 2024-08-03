@@ -106,6 +106,7 @@ const SignInForm = (props) => {
       // } else {
       //   router.replace(ROUTES.HOME);
       // }
+      router.replace(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
     } catch ({ code }) {
       setError({ password: { message: AUTH_ERROR_MESSAGES[code] } });
     } finally {

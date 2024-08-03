@@ -11,6 +11,7 @@ import theme from '@/theme/theme';
 import '@/styles/globals.css';
 
 const App = ({ Component, pageProps }) => {
+  console.log('app.js');
   const getLayout = Component.getLayout || ((page) => page);
   const { query } = useRouter();
 

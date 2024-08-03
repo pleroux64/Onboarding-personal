@@ -10,6 +10,7 @@ import SnackBar from '@/components/SnackBar';
 import { setLoading, setUser } from '@/redux/slices/authSlice';
 import { setUserData } from '@/redux/slices/userSlice';
 import store, { auth, firestore, functions } from '@/redux/store';
+import { fetchUserData } from '@/redux/thunks/user';
 
 const AuthContext = createContext();
 
@@ -26,6 +27,7 @@ const AuthProvider = (props) => {
   const [open, setOpen] = useState(false);
   const [severity, setSeverity] = useState('success');
   const [message, setMessage] = useState('Default Message');
+  const [onboardingFlag, setOnboardingFlag] = useState(null);
 
   const handleOpenSnackBar = (newSeverity, newMessage) => {
     setSeverity(newSeverity);
@@ -46,6 +48,12 @@ const AuthProvider = (props) => {
       if (user) {
         // Get auth user claims
         const { claims } = await user.getIdTokenResult(true);
+
+        const userData = await dispatch(
+          fetchUserData({ firestore, id: user.uid })
+        ).unwrap();
+        setOnboardingFlag(userData.needsBoarding);
+
         return dispatch(setUser({ ...user.toJSON(), claims }));
       }
 
@@ -59,7 +67,7 @@ const AuthProvider = (props) => {
     };
   }, []);
 
-  useRedirect(firestore, functions, handleOpenSnackBar);
+  useRedirect(firestore, functions, handleOpenSnackBar, onboardingFlag);
 
   const handleClose = () => {
     setOpen(false);

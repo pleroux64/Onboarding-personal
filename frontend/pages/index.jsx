@@ -9,6 +9,8 @@ import { firestore } from '@/redux/store';
 import fetchTools from '@/redux/thunks/tools';
 
 const Home = () => {
+  console.log('Home component is rendered'); // Log when component is rendered
+
   const { data, loading, error } = useSelector((state) => state.tools);
 
   const dispatch = useDispatch();

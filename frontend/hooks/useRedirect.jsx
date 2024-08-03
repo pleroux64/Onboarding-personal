@@ -14,7 +14,13 @@ import fetchUserData from '@/redux/thunks/user';
 
 const redirectRegex = /\/redirect.*/;
 
-const useRedirect = (firestore, functions, handleOpenSnackBar) => {
+const useRedirect = (
+  firestore,
+  functions,
+  handleOpenSnackBar,
+  onboardingFlag
+) => {
+  console.log('onboardingFlag', onboardingFlag);
   const router = useRouter();
   const dispatch = useDispatch();
 
@@ -22,18 +28,14 @@ const useRedirect = (firestore, functions, handleOpenSnackBar) => {
   const { data: authData, loading } = useSelector((state) => state.auth);
 
   const fetchUserRelatedData = async (id) => {
+    console.log('Fetching user related data');
     await dispatch(fetchUserData({ firestore, id }));
-  };
-
-  const fetchUserOnboardingStatus = async (id) => {
-    const userProfile = await dispatch(
-      fetchUserData({ firestore, id })
-    ).unwrap();
-    return userProfile;
   };
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    console.log('useRedirect useEffect - Initial Check');
 
     // Check if the current route is an authentication route
     const isAuthUrl = [
@@ -49,13 +51,17 @@ const useRedirect = (firestore, functions, handleOpenSnackBar) => {
 
     // If a authUser is authed, set the currentUser in the store and redirect to home if on an auth route
     if (auth.currentUser) {
+      console.log('User is authenticated');
+
       if (isRedirectRoute) {
+        console.log('Redirect route detected');
         dispatch(setLoading(false));
         return;
       }
 
       // If email is not verified, redirect to sign in
       if (!auth.currentUser.emailVerified) {
+        console.log('Email not verified');
         if (!isAuthUrl) {
           router.push(ROUTES.SIGNIN);
           return;
@@ -66,26 +72,29 @@ const useRedirect = (firestore, functions, handleOpenSnackBar) => {
       fetchUserRelatedData(auth.currentUser.uid);
 
       if (route === ROUTES.CREATE_AVATAR || route === ROUTES.PASSWORD_RESET) {
+        console.log('Special routes for create avatar or password reset');
         return;
       }
 
-      fetchUserOnboardingStatus(auth.currentUser.uid).then((user) => {
-        if (user && user.needsBoarding) {
-          router.replace(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
-        } else if (isAuthUrl) {
-          router.push(ROUTES.HOME);
-        }
-      });
+      if (onboardingFlag) {
+        console.log('User needs onboarding');
+        router.replace(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+      } else if (isAuthUrl) {
+        console.log('Routing to home as user does not need onboarding');
+        router.push(ROUTES.HOME);
+      }
 
       return;
     }
 
+    console.log('Checking if not auth route and not loading');
     if (!isAuthRoute && !loading) router.push(ROUTES.SIGNIN);
   }, [authData]);
 
   useEffect(() => {
     const isRedirectRoute = redirectRegex.test(asPath);
 
+    console.log('useRedirect useEffect - Checking redirect routes');
     if (isRedirectRoute) {
       const handleVerifyEmail = async () => {
         try {
