@@ -98,14 +98,14 @@ const SignInForm = (props) => {
 
       // If user is verified, redirect to home
       dispatch(setLoading(true));
-      const userData = await dispatch(
-        fetchUserData({ firestore, id: userCred.user.uid })
-      ).unwrap();
-      if (userData?.needsBoarding) {
-        router.replace(ROUTES.ONBOARDING);
-      } else {
-        router.replace(ROUTES.HOME);
-      }
+      // const userData = await dispatch(
+      //   fetchUserData({ firestore, id: userCred.user.uid })
+      // ).unwrap();
+      // if (userData?.needsBoarding) {
+      //   router.replace(ROUTES.ONBOARDING);
+      // } else {
+      //   router.replace(ROUTES.HOME);
+      // }
     } catch ({ code }) {
       setError({ password: { message: AUTH_ERROR_MESSAGES[code] } });
     } finally {
