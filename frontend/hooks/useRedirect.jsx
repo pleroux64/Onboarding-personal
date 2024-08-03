@@ -14,7 +14,12 @@ import fetchUserData from '@/redux/thunks/user';
 
 const redirectRegex = /\/redirect.*/;
 
-const useRedirect = (firestore, functions, handleOpenSnackBar) => {
+const useRedirect = (
+  firestore,
+  functions,
+  handleOpenSnackBar,
+  onboardingFlag
+) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { route, asPath, query } = router;
@@ -53,13 +58,13 @@ const useRedirect = (firestore, functions, handleOpenSnackBar) => {
         return;
       }
 
-      fetchUserRelatedData(auth.currentUser.uid).then((user) => {
-        if (user && user.needsBoarding) {
-          router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
-        } else if (isAuthUrl) {
-          router.push(ROUTES.HOME);
-        }
-      });
+      fetchUserRelatedData(auth.currentUser.uid);
+
+      if (onboardingFlag) {
+        router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+      } else if (isAuthUrl) {
+        router.push(ROUTES.HOME);
+      }
 
       return;
     }

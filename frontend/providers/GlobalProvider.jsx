@@ -1,5 +1,7 @@
 import { createContext, useEffect, useMemo, useState } from 'react';
 
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import { onAuthStateChanged } from 'firebase/auth';
 import { Provider, useDispatch } from 'react-redux';
 
@@ -10,15 +12,10 @@ import SnackBar from '@/components/SnackBar';
 import { setLoading, setUser } from '@/redux/slices/authSlice';
 import { setUserData } from '@/redux/slices/userSlice';
 import store, { auth, firestore, functions } from '@/redux/store';
+import { fetchUserData } from '@/redux/thunks/user';
 
 const AuthContext = createContext();
 
-/**
- * Creates an authentication provider to observe authentication state changes.
- *
- * @param {Object} children - The child components to render.
- * @return {Object} The child components wrapped in the authentication provider.
- */
 const AuthProvider = (props) => {
   const { children } = props;
   const dispatch = useDispatch();
@@ -26,6 +23,8 @@ const AuthProvider = (props) => {
   const [open, setOpen] = useState(false);
   const [severity, setSeverity] = useState('success');
   const [message, setMessage] = useState('Default Message');
+  const [onboardingFlag, setOnboardingFlag] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   const handleOpenSnackBar = (newSeverity, newMessage) => {
     setSeverity(newSeverity);
@@ -46,24 +45,50 @@ const AuthProvider = (props) => {
       if (user) {
         // Get auth user claims
         const { claims } = await user.getIdTokenResult(true);
-        return dispatch(setUser({ ...user.toJSON(), claims }));
-      }
+        const cachedOnboardingStatus = localStorage.getItem('needsBoarding');
 
+        if (cachedOnboardingStatus !== null) {
+          setOnboardingFlag(cachedOnboardingStatus);
+        } else {
+          const userData = await dispatch(
+            fetchUserData({ firestore, id: user.uid })
+          ).unwrap();
+          localStorage.setItem('needsBoarding', userData.needsBoarding);
+          setOnboardingFlag(userData.needsBoarding);
+        }
+
+        dispatch(setUser({ ...user.toJSON(), claims }));
+      } else {
+        dispatch(setUser(false));
+        dispatch(setUserData(false));
+      }
       dispatch(setLoading(false));
-      dispatch(setUser(false));
-      return dispatch(setUserData(false));
+      setAuthChecked(true);
     });
 
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [dispatch]);
 
-  useRedirect(firestore, functions, handleOpenSnackBar);
+  useRedirect(firestore, functions, handleOpenSnackBar, onboardingFlag);
 
   const handleClose = () => {
     setOpen(false);
   };
+
+  if (!authChecked) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <AuthContext.Provider value={memoizedValue}>
@@ -78,13 +103,6 @@ const AuthProvider = (props) => {
   );
 };
 
-/**
- * Creates a global provider component that wraps the entire app and provides access to the Redux store and authentication.
- *
- * @param {Object} props - The properties to be passed to the component.
- * @param {ReactNode} props.children - The child elements to be rendered within the provider.
- * @return {JSX.Element} The provider component.
- */
 const GlobalProvider = (props) => {
   const { children } = props;
   return (
