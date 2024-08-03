@@ -69,16 +69,16 @@ const useRedirect = (firestore, functions, handleOpenSnackBar) => {
         return;
       }
 
-      if (isAuthUrl) {
-        fetchUserOnboardingStatus(auth.currentUser.uid).then((user) => {
+      fetchUserOnboardingStatus(auth.currentUser.uid).then((user) => {
+        if (isAuthUrl) {
           if (user.needsBoarding) {
-            router.replace(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+            router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
           } else {
             router.push(ROUTES.HOME);
           }
-        });
-        return;
-      }
+        }
+      });
+
       return;
     }
 
