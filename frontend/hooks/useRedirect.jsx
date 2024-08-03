@@ -70,12 +70,10 @@ const useRedirect = (firestore, functions, handleOpenSnackBar) => {
       }
 
       fetchUserOnboardingStatus(auth.currentUser.uid).then((user) => {
-        if (isAuthUrl) {
-          if (user.needsBoarding) {
-            router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
-          } else {
-            router.push(ROUTES.HOME);
-          }
+        if (user && user.needsBoarding) {
+          router.replace(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+        } else if (isAuthUrl) {
+          router.push(ROUTES.HOME);
         }
       });
 
