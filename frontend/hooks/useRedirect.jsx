@@ -58,10 +58,8 @@ const useRedirect = (
         return;
       }
 
-      fetchUserRelatedData(auth.currentUser.uid);
-
       if (onboardingFlag) {
-        router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+        router.replace(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
       } else if (isAuthUrl) {
         router.push(ROUTES.HOME);
       }
@@ -83,7 +81,6 @@ const useRedirect = (
           const { oobCode } = query;
           await applyActionCode(auth, oobCode);
           dispatch(setEmailVerified(true));
-
           router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
         } catch (error) {
           handleOpenSnackBar(ALERT_COLORS.ERROR, 'Unable to verify email');
