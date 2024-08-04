@@ -14,25 +14,23 @@ import fetchUserData from '@/redux/thunks/user';
 
 const redirectRegex = /\/redirect.*/;
 
-const useRedirect = (
-  firestore,
-  functions,
-  handleOpenSnackBar,
-  onboardingFlag
-) => {
+const useRedirect = (firestore, functions, handleOpenSnackBar) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { route, asPath, query } = router;
   const { data: authData, loading } = useSelector((state) => state.auth);
+  const onboarding = useSelector((state) => state.onboarding.completed);
+
+  console.log('getNeedsOnboarding', onboarding);
 
   const fetchUserRelatedData = async (id) => {
-    const user = await dispatch(fetchUserData({ firestore, id })).unwrap();
-    return user;
+    await dispatch(fetchUserData({ firestore, id }));
   };
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // Check if the current route is an authentication route
     const isAuthUrl = [
       ROUTES.SIGNIN,
       ROUTES.SIGNUP,
@@ -43,13 +41,16 @@ const useRedirect = (
 
     const isRedirectRoute = redirectRegex.test(asPath);
     const isAuthRoute = isAuthUrl || isRedirectRoute;
+    const cachedOnboardingStatus = localStorage.getItem('needsBoarding');
 
+    // If a authUser is authed, set the currentUser in the store and redirect based on onboarding status
     if (auth.currentUser) {
       if (isRedirectRoute) {
         dispatch(setLoading(false));
         return;
       }
 
+      // If email is not verified, redirect to sign in
       if (!auth.currentUser.emailVerified) {
         if (!isAuthUrl) {
           router.push(ROUTES.SIGNIN);
@@ -57,19 +58,49 @@ const useRedirect = (
         }
         return;
       }
-
-      if (onboardingFlag) {
-        router.replace(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
-      } else if (isAuthUrl) {
-        router.push(ROUTES.HOME);
+      if (cachedOnboardingStatus) {
+        router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+        return;
+      }
+      if (cachedOnboardingStatus == null) {
+        const onboardingStatus = fetchUserData(firestore, auth.currentUser.id);
+        localStorage.setItem('needsBoarding', onboardingStatus);
+        router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+        return;
       }
 
+      fetchUserRelatedData(auth.currentUser.uid);
+      // const cachedOnboardingStatus = localStorage.getItem('needsBoarding');
+      // if (cachedOnboardingStatus !== null) {
+      //   if (cachedOnboardingStatus) {
+      //     router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+      //     dispatch(setLoading(false));
+      //     return;
+      //   }
+      // } else {
+      //   fetchUserRelatedData(auth.currentUser.uid).then((userData) => {
+      //     localStorage.setItem('needsBoarding', userData.needsBoarding);
+      //     if (userData.needsBoarding) {
+      //       router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+      //       dispatch(setLoading(false));
+      //     }
+      //   });
+      // }
+
+      // Check onboarding status
+
+      if (route === ROUTES.CREATE_AVATAR || route === ROUTES.PASSWORD_RESET) {
+        return;
+      }
+
+      if (isAuthUrl) {
+        router.push(ROUTES.HOME);
+        return;
+      }
       return;
     }
 
-    if (!isAuthRoute && !loading) {
-      router.push(ROUTES.SIGNIN);
-    }
+    if (!isAuthRoute && !loading) router.push(ROUTES.SIGNIN);
   }, [authData]);
 
   useEffect(() => {
@@ -79,12 +110,14 @@ const useRedirect = (
       const handleVerifyEmail = async () => {
         try {
           const { oobCode } = query;
+
           await applyActionCode(auth, oobCode);
+
           dispatch(setEmailVerified(true));
-          router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+          router.push(`${ROUTES.HOME}`);
         } catch (error) {
           handleOpenSnackBar(ALERT_COLORS.ERROR, 'Unable to verify email');
-          router.push(ROUTES.SIGNUP);
+          router.push(`${ROUTES.SIGNUP}`);
           throw new Error(error);
         }
       };
@@ -92,15 +125,16 @@ const useRedirect = (
       const { mode, oobCode } = query;
 
       if (mode === AUTH_MODES.PASSWORD_RESET) {
-        router.replace(`${ROUTES.PASSWORD_RESET}?oobCode=${oobCode}`);
+        router.push(`${ROUTES.PASSWORD_RESET}?oobCode=${oobCode}`);
         return;
       }
 
       if (mode === AUTH_MODES.VERIFY_EMAIL) {
         if (auth.currentUser?.emailVerified) {
-          router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+          router.push(ROUTES.HOME);
           return;
         }
+
         handleVerifyEmail();
       }
     }

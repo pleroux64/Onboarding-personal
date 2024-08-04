@@ -1,10 +1,10 @@
 import { ThemeProvider } from '@emotion/react';
-import { CircularProgress, Grid } from '@mui/material';
+
+import { useRouter } from 'next/router';
 import { GoogleAnalytics } from 'nextjs-google-analytics';
 
-import useOnboardingStatus from '@/hooks/useOnboardingStatus';
-
 import firebaseConfig from '@/firebase/config';
+
 import GlobalProvider from '@/providers/GlobalProvider';
 import theme from '@/theme/theme';
 
@@ -12,32 +12,16 @@ import '@/styles/globals.css';
 
 const App = ({ Component, pageProps }) => {
   const getLayout = Component.getLayout || ((page) => page);
-  const onboardingStatus = useOnboardingStatus();
-
-  const renderLoader = () => (
-    <Grid
-      container
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="100vh"
-    >
-      <CircularProgress color="secondary" size={25} />
-    </Grid>
-  );
-
-  if (onboardingStatus === null) {
-    return renderLoader();
-  }
+  const { query } = useRouter();
 
   return (
     <ThemeProvider theme={theme}>
-      <GlobalProvider onboardingStatus={onboardingStatus}>
+      <GlobalProvider>
         <GoogleAnalytics
           trackPageViews
           gaMeasurementId={firebaseConfig.measurementId}
         />
-        {getLayout(<Component {...pageProps} />)}
+        {getLayout(<Component {...pageProps} />, query)}
       </GlobalProvider>
     </ThemeProvider>
   );

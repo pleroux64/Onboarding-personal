@@ -8,8 +8,10 @@ import useRedirect from '@/hooks/useRedirect';
 import SnackBar from '@/components/SnackBar';
 
 import { setLoading, setUser } from '@/redux/slices/authSlice';
+import { setCompleted } from '@/redux/slices/onboardingSlice';
 import { setUserData } from '@/redux/slices/userSlice';
 import store, { auth, firestore, functions } from '@/redux/store';
+import { fetchUserData } from '@/redux/thunks/user';
 
 const AuthContext = createContext();
 
@@ -17,10 +19,10 @@ const AuthContext = createContext();
  * Creates an authentication provider to observe authentication state changes.
  *
  * @param {Object} children - The child components to render.
- * @param {Object} onboardingStatus - The onboarding status to pass down.
  * @return {Object} The child components wrapped in the authentication provider.
  */
-const AuthProvider = ({ children, onboardingStatus }) => {
+const AuthProvider = (props) => {
+  const { children } = props;
   const dispatch = useDispatch();
 
   const [open, setOpen] = useState(false);
@@ -44,7 +46,13 @@ const AuthProvider = ({ children, onboardingStatus }) => {
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        // Get auth user claims
         const { claims } = await user.getIdTokenResult(true);
+        console.log('user', user);
+        // const userData = dispatch(fetchUserData({ firestore, uid: user.uid }));
+        console.log('setCompleted', true);
+        dispatch(setCompleted(true));
+
         return dispatch(setUser({ ...user.toJSON(), claims }));
       }
 
@@ -58,7 +66,7 @@ const AuthProvider = ({ children, onboardingStatus }) => {
     };
   }, []);
 
-  useRedirect(firestore, functions, handleOpenSnackBar, onboardingStatus);
+  useRedirect(firestore, functions, handleOpenSnackBar);
 
   const handleClose = () => {
     setOpen(false);
@@ -82,14 +90,17 @@ const AuthProvider = ({ children, onboardingStatus }) => {
  *
  * @param {Object} props - The properties to be passed to the component.
  * @param {ReactNode} props.children - The child elements to be rendered within the provider.
- * @param {boolean} props.onboardingStatus - The onboarding status.
  * @return {JSX.Element} The provider component.
  */
-const GlobalProvider = ({ children, onboardingStatus }) => (
-  <Provider store={store}>
-    <AuthProvider onboardingStatus={onboardingStatus}>{children}</AuthProvider>
-  </Provider>
-);
+const GlobalProvider = (props) => {
+  const { children } = props;
+  return (
+    <Provider store={store}>
+      <AuthProvider>{children}</AuthProvider>
+    </Provider>
+  );
+};
 
 export { AuthContext };
+
 export default GlobalProvider;
