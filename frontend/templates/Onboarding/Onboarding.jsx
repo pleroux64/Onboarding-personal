@@ -45,6 +45,7 @@ const OnboardingPage = ({ onboardingData }) => {
     if (onboardingComponents[onboardingData.id] === FinalSteps) {
       dispatch(updateUserData({ firestore, data: tempData }));
       dispatch(setCompleted(true));
+      localStorage.setItem('needsBoarding', false);
     }
     dispatch(setStep(onboardingData.id + 1)); // Update the step in Redux
     router.push(`/onboarding/${onboardingData.id + 1}`);

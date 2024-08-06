@@ -79,15 +79,16 @@ const SignInForm = (props) => {
 
       dispatch(setLoading(true));
 
-      const userData = await dispatch(
-        fetchUserData({ firestore, id: userCred.user.uid })
-      ).unwrap();
+      // const userData = await dispatch(
+      //   fetchUserData({ firestore, id: userCred.user.uid })
+      // ).unwrap();
 
-      if (userData?.needsBoarding) {
-        router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
-      } else {
-        router.push(ROUTES.HOME);
-      }
+      // if (userData?.needsBoarding) {
+      //   console.log('boarding');
+      //   router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+      // } else {
+      //   router.push(ROUTES.HOME);
+      // }
     } catch ({ code }) {
       setError({ password: { message: AUTH_ERROR_MESSAGES[code] } });
     } finally {

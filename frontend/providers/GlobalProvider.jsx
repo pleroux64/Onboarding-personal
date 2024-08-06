@@ -8,10 +8,8 @@ import useRedirect from '@/hooks/useRedirect';
 import SnackBar from '@/components/SnackBar';
 
 import { setLoading, setUser } from '@/redux/slices/authSlice';
-import { setCompleted } from '@/redux/slices/onboardingSlice';
 import { setUserData } from '@/redux/slices/userSlice';
 import store, { auth, firestore, functions } from '@/redux/store';
-import { fetchUserData } from '@/redux/thunks/user';
 
 const AuthContext = createContext();
 
@@ -48,11 +46,6 @@ const AuthProvider = (props) => {
       if (user) {
         // Get auth user claims
         const { claims } = await user.getIdTokenResult(true);
-        console.log('user', user);
-        // const userData = dispatch(fetchUserData({ firestore, uid: user.uid }));
-        console.log('setCompleted', true);
-        dispatch(setCompleted(true));
-
         return dispatch(setUser({ ...user.toJSON(), claims }));
       }
 

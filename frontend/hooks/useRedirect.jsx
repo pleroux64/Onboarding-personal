@@ -9,6 +9,7 @@ import ALERT_COLORS from '@/constants/notification';
 import ROUTES from '@/constants/routes';
 
 import { setEmailVerified, setLoading } from '@/redux/slices/authSlice';
+import { setCompleted } from '@/redux/slices/userSlice';
 import { auth } from '@/redux/store';
 import fetchUserData from '@/redux/thunks/user';
 
@@ -21,10 +22,9 @@ const useRedirect = (firestore, functions, handleOpenSnackBar) => {
   const { data: authData, loading } = useSelector((state) => state.auth);
   const onboarding = useSelector((state) => state.onboarding.completed);
 
-  console.log('getNeedsOnboarding', onboarding);
-
   const fetchUserRelatedData = async (id) => {
-    await dispatch(fetchUserData({ firestore, id }));
+    const userData = await dispatch(fetchUserData({ firestore, id }));
+    return userData;
   };
 
   useEffect(() => {
@@ -58,37 +58,34 @@ const useRedirect = (firestore, functions, handleOpenSnackBar) => {
         }
         return;
       }
+      // If already logged in and onboarding is required, redirect to onboarding
       if (cachedOnboardingStatus) {
+        console.log('onboarding check', cachedOnboardingStatus);
+
         router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+
         return;
+
+        // fetchUserRelatedData(auth.currentUser.uid);
+
+        // fetchUserRelatedData(auth.currentUser.uid);
       }
+      // if in the process of logging in, and onboarding is required, redirect to onboarding
       if (cachedOnboardingStatus == null) {
-        const onboardingStatus = fetchUserData(firestore, auth.currentUser.id);
+        const onboardingStatus = fetchUserData(firestore, auth.currentUser);
         localStorage.setItem('needsBoarding', onboardingStatus);
-        router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
-        return;
+        if (onboardingStatus) {
+          router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+          return;
+        }
+
+        // if (onboardingStatus === true) {
+        //   router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+        //   return;
+        // }
       }
 
       fetchUserRelatedData(auth.currentUser.uid);
-      // const cachedOnboardingStatus = localStorage.getItem('needsBoarding');
-      // if (cachedOnboardingStatus !== null) {
-      //   if (cachedOnboardingStatus) {
-      //     router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
-      //     dispatch(setLoading(false));
-      //     return;
-      //   }
-      // } else {
-      //   fetchUserRelatedData(auth.currentUser.uid).then((userData) => {
-      //     localStorage.setItem('needsBoarding', userData.needsBoarding);
-      //     if (userData.needsBoarding) {
-      //       router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
-      //       dispatch(setLoading(false));
-      //     }
-      //   });
-      // }
-
-      // Check onboarding status
-
       if (route === ROUTES.CREATE_AVATAR || route === ROUTES.PASSWORD_RESET) {
         return;
       }
