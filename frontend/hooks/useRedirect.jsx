@@ -20,7 +20,6 @@ const useRedirect = (firestore, functions, handleOpenSnackBar) => {
 
   const { route, asPath, query } = router;
   const { data: authData, loading } = useSelector((state) => state.auth);
-  const { data: userData } = useSelector((state) => state.user);
   const fetchUserRelatedData = async (id) => {
     await dispatch(fetchUserData({ firestore, id }));
   };
@@ -35,11 +34,13 @@ const useRedirect = (firestore, functions, handleOpenSnackBar) => {
       ROUTES.PRIVACY,
       ROUTES.TERMS,
       ROUTES.PASSWORD_RESET,
+      // ROUTES.ONBOARDING.replace('[onboardingId]', '0'),
     ].includes(route);
 
     const isRedirectRoute = redirectRegex.test(asPath);
     const isAuthRoute = isAuthUrl || isRedirectRoute;
-    const onboardingStatus = userData?.needsBoarding;
+    const cachedOnboardingStatus = localStorage.getItem('needsBoarding');
+
     // If a authUser is authed, set the currentUser in the store and redirect based on onboarding status
     if (auth.currentUser) {
       if (isRedirectRoute) {
@@ -57,12 +58,13 @@ const useRedirect = (firestore, functions, handleOpenSnackBar) => {
       }
 
       // If already logged in and onboarding is required, redirect to onboarding
-      if (onboardingStatus) {
-        router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
-        return;
-      }
 
       fetchUserRelatedData(auth.currentUser.uid);
+
+      if (cachedOnboardingStatus === 'true') {
+        router.replace(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
+        return;
+      }
 
       if (route === ROUTES.CREATE_AVATAR || route === ROUTES.PASSWORD_RESET) {
         return;
@@ -89,7 +91,7 @@ const useRedirect = (firestore, functions, handleOpenSnackBar) => {
           await applyActionCode(auth, oobCode);
 
           dispatch(setEmailVerified(true));
-          router.push(`${ROUTES.HOME}`);
+          router.replace(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
         } catch (error) {
           handleOpenSnackBar(ALERT_COLORS.ERROR, 'Unable to verify email');
           router.push(`${ROUTES.SIGNUP}`);

@@ -42,6 +42,7 @@ const OnboardingPage = ({ onboardingData }) => {
     }
 
     if (onboardingComponents[onboardingData.id] === Complete) {
+      localStorage.setItem('needsBoarding', false);
       dispatch(
         updateUserData({
           firestore,
@@ -51,8 +52,12 @@ const OnboardingPage = ({ onboardingData }) => {
       dispatch(setCompleted(true));
     }
 
-    dispatch(setStep(onboardingData.id + 1)); // Update the step in Redux
-    router.push(`/onboarding/${onboardingData.id + 1}`);
+    if (onboardingComponents[onboardingData.id] === Complete) {
+      router.push('/');
+    } else {
+      dispatch(setStep(onboardingData.id + 1)); // Update the step in Redux
+      router.push(`/onboarding/${onboardingData.id + 1}`);
+    }
   };
 
   const SpecificOnboardingScreen =

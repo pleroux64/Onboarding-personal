@@ -101,8 +101,10 @@ const SignInForm = (props) => {
       const userData = await dispatch(
         fetchUserData({ firestore, id: userCred.user.uid })
       ).unwrap();
+      console.log('userData', userData);
       if (userData?.needsBoarding) {
-        router.replace(ROUTES.ONBOARDING);
+        localStorage.setItem('needsBoarding', true);
+        router.push(ROUTES.ONBOARDING.replace('[onboardingId]', '0'));
       } else {
         router.replace(ROUTES.HOME);
       }

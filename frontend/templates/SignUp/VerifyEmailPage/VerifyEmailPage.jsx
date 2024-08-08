@@ -25,6 +25,8 @@ const VerifyEmailPage = (props) => {
   const { data: authData } = useSelector((state) => state.auth);
 
   useEffect(() => {
+    localStorage.setItem('needsBoarding', true);
+
     let interval;
 
     if (authData && seconds > 0) {
